@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "model": {
+    "name": "qwen3.5-0.8b-1024",
+    "family": "llm",
+    "dsp_arch": "v81",
+    "tokenizer_pre": "qwen2"
+  },
+  "params": {
+    "hidden": 1024,
+    "vocab": 248320,
+    "n_layers": 24,
+    "max_ctx": 1024,
+    "kv_dim": 512,
+    "head_dim": 256,
+    "rope_theta": 10000000.0,
+    "eos_token_id": 248044,
+    "gated_delta": {
+      "q_heads": 8,
+      "kv_heads": 2,
+      "lin_k_heads": 16,
+      "lin_v_heads": 16,
+      "lin_k_dim": 128,
+      "lin_v_dim": 128,
+      "conv_kernel": 4,
+      "full_every": 4,
+      "rot_dim": 64,
+      "attn_gate": true,
+      "full_attn_idx": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23
+      ]
+    }
+  },
+  "artifacts": {
+    "contexts": {
+      "decode": {
+        "bin": "qwen3508b_decode_f16.bin"
+      },
+      "lmhead": {
+        "bin": "qwen3508b_lmhead_f16.bin"
+      }
+    },
+    "embed": "qwen3508b_embed_f16.bin",
+    "tokenizer": "tokenizer.json"
+  },
+  "plan": {
+    "steps": [
+      {
+        "host": "qwen3_5_generate",
+        "params": {
+          "decode": "qwen3508b_decode_f16",
+          "lmhead": "qwen3508b_lmhead_f16",
+          "max_new": 64,
+          "neg": -50000
+        }
+      }
+    ]
+  }
+}

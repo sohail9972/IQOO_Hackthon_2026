@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "_comment": "Qwen3.5 (qwen3_5) GatedDeltaNet hybrid TEXT decoder for v81. Most layers are a recurrent gated delta-rule linear attention (+ short conv state), 1-in-4 is gated softmax attention (partial-rotary M-RoPE, output gate). Decode-over-prompt seed; W8 decode (~0.5GB, single context, under the 2GB model-lib limit) + fp16 lm-head, under a tolerant greedy_tol gate (W8 weights only \u2014 the fp32 SSM scan + host conv/SSM/KV state are untouched). Vision tower + MTP not exported (text-LLM path).",
+  "model": {
+    "name": "qwen3.5-0.8b-1024",
+    "family": "llm",
+    "dsp_arch": "v75",
+    "tokenizer_pre": "qwen2"
+  },
+  "chat": {
+    "system": {
+      "prefix": "<|im_start|>system\n",
+      "suffix": "<|im_end|>\n"
+    },
+    "user": {
+      "prefix": "<|im_start|>user\n",
+      "suffix": "<|im_end|>\n"
+    },
+    "assistant": {
+      "prefix": "<|im_start|>assistant\n",
+      "suffix": "<|im_end|>\n"
+    }
+  },
+  "params": {
+    "hidden": 1024,
+    "vocab": 248320,
+    "n_layers": 24,
+    "max_ctx": 1024,
+    "kv_dim": 512,
+    "head_dim": 256,
+    "rope_theta": 10000000.0,
+    "eos_token_id": 248044,
+    "gated_delta": {
+      "q_heads": 8,
+      "kv_heads": 2,
+      "lin_k_heads": 16,
+      "lin_v_heads": 16,
+      "lin_k_dim": 128,
+      "lin_v_dim": 128,
+      "conv_kernel": 4,
+      "full_every": 4,
+      "rot_dim": 64,
+      "attn_gate": true,
+      "full_attn_idx": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23
+      ]
+    }
+  },
+  "artifacts": {
+    "contexts": {
+      "decode": {
+        "bin": "qwen3508b_decode_w8.bin"
+      },
+      "lmhead": {
+        "bin": "qwen3508b_lmhead_f16.bin"
+      }
+    },
+    "embed": "qwen3508b_embed_f16.bin",
+    "tokenizer": "tokenizer.json"
+  },
+  "plan": {
+    "steps": [
+      {
+        "host": "qwen3_5_generate",
+        "params": {
+          "decode": "qwen3508b_decode_w8",
+          "lmhead": "qwen3508b_lmhead_f16",
+          "max_new": 64,
+          "neg": -50000
+        }
+      }
+    ]
+  }
+}
